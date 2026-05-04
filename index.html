@@ -141,7 +141,7 @@
 
                 <!-- Tab Data Siswa -->
                 <div id="tab-data">
-                    <!-- Widget Ringkasan & Filter (BARU) -->
+                    <!-- Widget Ringkasan & Filter -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div id="card-filter-all" onclick="filterTable('all')" class="bg-blue-50 border-2 border-blue-500 p-4 rounded-xl shadow cursor-pointer transition transform hover:-translate-y-1">
                             <div class="flex justify-between items-center">
@@ -172,7 +172,7 @@
                         </div>
                     </div>
 
-                    <!-- Toolbar Aksi & Pencarian (DIPERBARUI UNTUK RESPONSIVE & PENCARIAN) -->
+                    <!-- Toolbar Aksi & Pencarian -->
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                         <div class="flex flex-wrap gap-2 w-full md:w-auto">
                             <button onclick="tambahDataManual()" class="flex-1 sm:flex-none justify-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow text-sm font-semibold"><i class="fa-solid fa-plus"></i> Tambah Data</button>
@@ -247,8 +247,13 @@
         // ==========================================
         // KONFIGURASI APLIKASI
         // ==========================================
-        const IS_PREVIEW = false; // Set false untuk deploy production
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbzon_RZnl7-5zv_0UB4fNszWV28O4DwO5CSZXlUrRAm5rzomBH1Kd5UQy__kyr5RrKE/exec"; // Ganti dengan URL WebApp GAS Anda
+        
+        // PENTING: UBAH 'true' MENJADI 'false' SAAT DIUPLOAD KE HOSTING / GITHUB
+        // Saat ini "true" agar Anda bisa melihat Preview di Canvas ini tanpa error.
+        const IS_PREVIEW = false; 
+        
+        // PASTE URL DEPLOY GOOGLE APPS SCRIPT ANDA DI SINI NANTINYA
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwHoExPYJlUgu1tnOfVoki0GnnX6mxFkYNBmzh3Me6X6g_OOXajyb6UHbw-0t3F5Sq0/exec"; 
         
         // Data Dummy untuk Preview Mode
         let dummyTargetDate = new Date(new Date().getTime() + 10000).toISOString(); // 10 detik dari sekarang
@@ -295,7 +300,7 @@
                 if (!result.success) throw new Error(result.message);
                 return result.data;
             } catch (error) {
-                Swal.fire('Error koneksi', error.message || 'Gagal terhubung ke server', 'error');
+                Swal.fire('Error koneksi', error.message || 'Gagal terhubung ke server. Periksa GAS_URL Anda.', 'error');
                 throw error;
             }
         }
@@ -460,7 +465,7 @@
                 }
                 document.getElementById('inputSiswaNisn').value = '';
             } catch(error) {
-                // Notifikasi gagal
+                // Notifikasi gagal (di-handle oleh fetchGAS otomatis)
             }
         }
 
@@ -595,7 +600,7 @@
                     <input id="swal-nisn" class="swal2-input" placeholder="NISN" value="${data.nisn || ''}">
                     <input id="swal-nama" class="swal2-input" placeholder="Nama Siswa" value="${data.nama || ''}">
                     <input id="swal-tmpt" class="swal2-input" placeholder="Tempat Lahir" value="${data.tempat_lahir || ''}">
-                    <input id="swal-tgl" type="date" class="swal2-input" placeholder="Tanggal Lahir" value="${data.tanggal_lahir || ''}">
+                    <input id="swal-tgl" type="text" class="swal2-input" placeholder="Tanggal Lahir (Ex: 12 Mei 2010)" value="${data.tanggal_lahir || ''}">
                     <input id="swal-kelas" class="swal2-input" placeholder="Kelas" value="${data.kelas || ''}">
                     <select id="swal-status" class="swal2-input">
                         <option value="Lulus" ${data.status === 'Lulus' ? 'selected':''}>Lulus</option>
