@@ -180,6 +180,7 @@
                                 <i class="fa-solid fa-file-excel"></i> Upload Excel
                                 <input type="file" id="fileExcel" accept=".xlsx, .xls" class="hidden" onchange="handleExcelUpload(event)">
                             </label>
+                            <button onclick="hapusSemuaSiswa()" class="flex-1 sm:flex-none justify-center bg-red-600 hover:bg-red-800 text-white px-4 py-2 rounded shadow text-sm font-semibold"><i class="fa-solid fa-trash-can"></i> Hapus Semua</button>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                             <div class="relative w-full sm:w-64">
@@ -321,6 +322,7 @@
                     else if(action === 'updateSettings') { dummyTargetDate = p.targetDate; resolve(true); }
                     else if(action === 'changePassword') { dummyAdminPass = p.password; resolve(true); }
                     else if(action === 'deleteSiswa') { dummySiswa = dummySiswa.filter(x => x.id != p.id); resolve(true); }
+                    else if(action === 'deleteAllSiswa') { dummySiswa = []; resolve(true); }
                     else if(action === 'saveSiswa') {
                         if(p.id) { 
                             let i = dummySiswa.findIndex(x => x.id == p.id); 
@@ -638,6 +640,29 @@
             });
         }
 
+        async function hapusSemuaSiswa() {
+            if(cachedDataSiswa.length === 0) return Swal.fire('Info', 'Tidak ada data untuk dihapus', 'info');
+
+            Swal.fire({
+                title: 'Hapus SEMUA Data?', 
+                text: "PERINGATAN KERAS: Seluruh data siswa akan dihapus permanen. Aksi ini tidak bisa dibatalkan!", 
+                icon: 'warning',
+                showCancelButton: true, 
+                confirmButtonColor: '#d33', 
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Kosongkan Data!'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        Swal.fire({title:'Menghapus...', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
+                        await fetchGAS('deleteAllSiswa');
+                        Swal.fire('Berhasil!', 'Seluruh data siswa telah dikosongkan.', 'success');
+                        loadDataAdmin();
+                    } catch(e){}
+                }
+            });
+        }
+
         // 6. Integrasi Excel (SheetJS)
         function downloadTemplate() {
             const ws_data = [["NISN", "Nama Siswa", "Tempat Lahir", "Tanggal Lahir", "Kelas", "Status Kelulusan"]];
@@ -656,20 +681,23 @@
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
                 const firstSheet = workbook.SheetNames[0];
-                const rawData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], {header: 1});
+                
+                // Tambahkan raw: false agar SheetJS membaca tipe cell sesuai tampilan di Excel (memaksa text/string format)
+                const rawData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], {header: 1, raw: false, defval: ""});
                 
                 // Mapping data skip header
                 const mappedData = [];
                 for(let i = 1; i < rawData.length; i++) {
                     let row = rawData[i];
-                    if(row[0]) {
+                    // Validasi NISN ada dan bukan string kosong, lalu rubah SEMUA field menjadi text/string secara paksa
+                    if(row[0] && row[0].toString().trim() !== "") {
                         mappedData.push({
-                            nisn: row[0].toString(),
-                            nama: row[1] || '-',
-                            tempat_lahir: row[2] || '-',
-                            tanggal_lahir: row[3] || '-',
-                            kelas: row[4] || '-',
-                            status: row[5] || 'Lulus'
+                            nisn: row[0].toString().trim(),
+                            nama: (row[1] || '-').toString().trim(),
+                            tempat_lahir: (row[2] || '-').toString().trim(),
+                            tanggal_lahir: (row[3] || '-').toString().trim(),
+                            kelas: (row[4] || '-').toString().trim(),
+                            status: (row[5] || 'Lulus').toString().trim()
                         });
                     }
                 }
