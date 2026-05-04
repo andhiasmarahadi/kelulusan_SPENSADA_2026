@@ -312,9 +312,10 @@
                         else reject(new Error('Password Admin Salah!'));
                     }
                     else if(action === 'loginSiswa') {
-                        const s = dummySiswa.find(x => x.nisn === p.nisn);
+                        const searchNisn = p.nisn.toString().trim();
+                        const s = dummySiswa.find(x => x.nisn.toString().trim() === searchNisn);
                         if(s) resolve(s);
-                        else reject(new Error('NISN tidak ditemukan!'));
+                        else reject(new Error('NISN tidak terdaftar di database.'));
                     }
                     else if(action === 'getSiswa') resolve(dummySiswa);
                     else if(action === 'updateSettings') { dummyTargetDate = p.targetDate; resolve(true); }
@@ -420,7 +421,8 @@
         // 2. Login Siswa
         async function handleLoginSiswa(e) {
             e.preventDefault();
-            const nisn = document.getElementById('inputSiswaNisn').value;
+            // Tambahkan .trim() untuk membuang spasi tidak sengaja di input
+            const nisn = document.getElementById('inputSiswaNisn').value.trim();
             try {
                 Swal.fire({title:'Mengecek Data', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
                 const dataSiswa = await fetchGAS('loginSiswa', { nisn: nisn });
